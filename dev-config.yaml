@@ -34,6 +34,8 @@ proxy:
 hub:
   db:
     type: sqlite-memory
+  image:
+    name: custom-hub-image
   loadRoles:
     test-scoped-access:
       description: Used to JupyterHub 2.0.0+ RBAC scoped access, currently to the /hub/api/info endpoint via read:hub.
