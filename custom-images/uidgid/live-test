@@ -1,0 +1,64 @@
+#! /bin/sh
+
+set -u
+
+TEST_MODE=${1:-0}
+UIDGID_SERVER_URL=${2:-"0.0.0.0:5050"}
+SVC_UID=${3:-"1000"}
+SVC_GID=${4:-"1000"}
+UIDGID_CLIENT_URL=${"http://localhost:5050"}
+
+PORT=$(echo $UIDGID_SERVER_URL | cut -d ':' -f2)
+
+make build-service
+
+container=$( docker run -d -it \
+       -p $PORT:$PORT \
+       --env DEPLOYMENT_NAME=${DEPLOYMENT_NAME} \
+       --env ENVIRONMENT=${ENVIRONMENT} \
+       --env AWS_ACCOUNT_NAME=${AWS_ACCOUNT_NAME} \
+       --env SVC_UID=${SVC_UID} \
+       --env SVC_GID=${SVC_GID} \
+       --env UIDGID_SERVER_URL=${UIDGID_SERVER_URL} \
+       --user $SVC_UID:$SVC_GID \
+       --cap-drop ALL \
+       --cap-add DAC_READ_SEARCH \
+       --cap-add DAC_OVERRIDE \
+       --cap-add CHOWN \
+       --cap-add FOWNER \
+       --cap-add FSETID \
+       --cap-add SETGID \
+       --cap-add SETUID \
+       --cap-add AUDIT_WRITE \
+       uidgid-service
+)
+
+
+echo "Waiting 5 secs for startup..."
+sleep 5
+curl http://127.0.0.1:$PORT/check-alive
+
+case ${TEST_MODE} in
+    pytest|0)
+        pytest --pdb --doctest-continue-on-failure
+        ;;
+    coverage|1)
+        coverage run --source uidgid -m pytest
+        coverage report -m
+        coverage html
+        ;;
+    load-test|3)
+        locust  --host http://127.0.0.1:5050  --locustfile tests/locustfile.py
+        ;;
+    daemon|exit|4)
+        exit 0
+        ;;
+    *)
+        echo "Unrecognized test mode: ${TEST_MODE}"
+        ;;
+esac
+
+docker logs $container >& live-test.log
+
+docker container stop $container
+docker container prune -f

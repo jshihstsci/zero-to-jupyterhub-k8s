@@ -29,7 +29,9 @@ charts:
       # hub, the container where JupyterHub, KubeSpawner, and the configured
       # Authenticator are running.
       hub:
+        imageName: jupyterhub/k8s-custom-hub-image
         valuesPath: hub.image
+        dockerfilePath: custom-images/hub/Dockerfile
       # hub-slim, an alternative hub image that doesn't include some
       # basic utilities for k8s admins
       hub-slim:

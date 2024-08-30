@@ -1,0 +1,95 @@
+#! /bin/bash
+
+# This script creates a deployment/pod to run the sh-doctest test specs on a
+# test subpath of an actual JupyterHub cluster as a pre-check that the cluster
+# is functional.  More direct checks (non-destructive) should periodically be
+# peformed later with an actual deployed system, that's not covered here.
+
+# Due to the elevated privs of this tester deployment,  its very important
+# to exit and shutdown the deployment.
+
+set -eu
+
+command=${*:-/bin/bash}
+
+echo "Applying efs-tester deployment..."
+kubectl apply -f - <<EOS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: efs-tester
+  namespace: default
+  labels:
+    app: efs-tester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: efs-tester
+  template:
+    metadata:
+      labels:
+        app: efs-tester
+    spec:
+      containers:
+      - name: efs-tester
+        image: python:3.11-bullseye
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "0.1"
+          limits:
+            memory: "200Mi"
+            cpu: "0.25"
+        command:
+        - sleep
+        - "14400"
+        env:
+        volumeMounts:
+        - name: efs-default-root
+          mountPath: /efs
+          # subPath:
+          readOnly: False
+      volumes:
+      - name: efs-default-root
+        persistentVolumeClaim:
+          claimName: efs-default-root-pvc
+EOS
+
+
+# Wait until the deployment is ready and the pod is up and running
+while [[ "`kubectl get deployments -n default | grep efs-tester | awk '{ print $2; }'`" != "1/1" ]];
+do
+    echo "Waiting 5 seconds for efs-tester deployment..."
+    sleep 5
+done
+
+function kpods {
+    pod_pat=${1}
+    namespace=${2:-default}
+    echo $(kubectl get pods --namespace $namespace | grep $pod_pat | head -1 | cut -d ' ' -f 1)
+}
+
+function kexec {
+    pod_pat=${1}
+    namespace=${2:-default}
+    shift; shift;
+    cmd=${*:-/bin/bash}
+    kubectl exec -it --namespace $namespace $(kpods $pod_pat $namespace) -- $(echo $cmd)
+}
+
+#kubectl get deployments -n default
+
+kubectl cp  . `kpods tester`:/efs/test-specs
+
+# kexec tester default apt-get update && apt-get install git vim emacs-nox
+kexec tester default pip install git+https://github.com/jaytmiller/sh-doctest
+
+# exec a shell into the pod in the default namespace with "tester" in its name
+kexec  tester default /bin/bash   # $command || true
+
+# wipe out this deployment now that testerging is done.
+echo "Deleting efs-tester deployment..."
+kubectl delete deployment efs-tester -n default
+

@@ -1,0 +1,119 @@
+=========================================================================
+Verify positive capabilities of <user> in <directory>.
+creation, modification, rename, deletion, listing, chmod, chown
+
+template: positive_capabilities
+var: user, group, run_as, directory
+
+name: <template>  <user> create file, directory, nested file, listing
+$ rm -rf <directory>/<user>.txt <directory>/<user>_dir
+$ touch <directory>/<user>.txt
+$ mkdir <directory>/<user>_dir
+$ touch <directory>/<user>_dir/<user>.txt
+$ show_file <directory>/<user>.txt
+$ show_dir  <directory>/<user>_dir
+$ ls <directory>/<user>_dir/<user>.txt
+-rw-r-----. <user> <group> <directory>/<user>.txt
+drwxr-s---. <user> <group> <directory>/<user>_dir
+<directory>/<user>_dir/<user>.txt
+
+name: <template> <user> write file and read it back
+$ echo "surprise!" > <directory>/<user>.txt
+$ cat <directory>/<user>.txt
+surprise!
+
+$ echo "surprise2!" > <directory>/<user>_dir/<user>_dir.txt
+$ cat <directory>/<user>_dir/<user>_dir.txt
+surprise2!
+
+name: <template> test <user> file rename delete
+$ mv <directory>/<user>.txt <directory>/<user>.txt.new
+$ show_file <directory>/<user>.txt.new
+-rw-r-----. <user> <group> <directory>/<user>.txt.new
+
+$ cp <directory>/<user>.txt.new <directory>/<user>.txt
+$ rm <directory>/<user>.txt.new
+$ ls <directory>/<user>.txt.new
+!!
+ls: cannot access '<directory>/<user>.txt.new': No such file or directory
+
+name: <template> test <user> dir rename delete
+$ mv <directory>/<user>_dir <directory>/<user>_dir.new
+$ show_dir <directory>/<user>_dir.new
+$ ls <directory>/<user>_dir
+drwxr-s---. <user> <group> <directory>/<user>_dir.new
+!!
+ls: cannot access '<directory>/<user>_dir': No such file or directory
+
+$ cp -r <directory>/<user>_dir.new <directory>/<user>_dir
+$ rm -rf <directory>/<user>_dir.new
+$ ls <directory>/<user>_dir.new
+!!
+ls: cannot access '<directory>/<user>_dir.new': No such file or directory
+
+Note that the directory sticky bit does not propagate to the nested
+directories automatically.
+
+name: <template> test <user> file chmod chown 0
+$ chmod 777 <directory>/<user>.txt
+$ show_file <directory>/<user>.txt
+-rwxrwxrwx. <user> <group> <directory>/<user>.txt
+
+name: <template> test <user> file chmod chown 1
+$ chmod 660 <directory>/<user>.txt
+$ show_file <directory>/<user>.txt
+-rw-rw----. <user> <group> <directory>/<user>.txt
+
+# name: <template> test <user> file chmod chown 2
+# $ chown <user>:team2 <directory>/<user>.txt
+# $ show_file <directory>/<user>.txt
+# -rw-rw----. <user> team2 <directory>/<user>.txt
+
+name: <template> test <user> file chmod chown 3
+$ chown <user>:<group> <directory>/<user>.txt
+$ show_file <directory>/<user>.txt
+-rw-rw----. <user> <group> <directory>/<user>.txt
+
+name: <template> test <user> directory chmod chown 0
+$ chmod 777 <directory>/<user>_dir
+$ show_dir <directory>/<user>_dir
+drwxrwsrwx. <user> <group> <directory>/<user>_dir
+
+name: <template> test <user> directory chmod chown  1
+$ chmod 750 <directory>/<user>_dir
+$ show_dir <directory>/<user>_dir
+drwxr-s---. <user> <group> <directory>/<user>_dir
+
+name: <template> test <user> directory chmod chown 2
+$ chown <user>:<group> <directory>/<user>_dir
+$ show_dir <directory>/<user>_dir
+drwxr-s---. <user> <group> <directory>/<user>_dir
+$ chown <user>:<group> <directory>/<user>_dir
+
+name: <template> test <user> cleanup
+$ rm -rf <directory>/<user>.txt <directory>/<user>_dir
+exit_code: 0
+
+end_template: positive_capabilities
+
+
+----------------------------------------------------------------------------
+Verify jmiller own shared file creation, rename, deletion, group, chmod, chown.
+
+expand: positive_capabilities
+let: user      jmiller
+let: group     jmiller
+let: run_as    jmiller:jmiller:rmn-50006-miller,jmiller,rmn-50005-murray
+let: directory /home/jovyan
+
+----------------------------------------------------------------------------
+Verify member1a own shared file creation, rename, deletion, group, chmod, chown.
+
+expand: positive_capabilities
+let: user      jmiller
+let: group     rmn-50006-miller
+let: run_as    jmiller:rmn-50006-miller
+let: directory /teams/rmn-50006-miller
+
+
+

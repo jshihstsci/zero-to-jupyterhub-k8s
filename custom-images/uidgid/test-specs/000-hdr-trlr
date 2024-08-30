@@ -1,0 +1,106 @@
+====================================================================
+Define header script which should be the preface of all test cases.
+This is non-standard in the sense that it is not a test case but
+rather used to configure global setup for all test cases.  Ulimately,
+it is prepended to every subprocess script, and the trailer is
+appended to it.  Thus the functions and setup defined here are
+available to and applicable to all tests.  The test case names
+`header` and `trailer` are reserved for this purpose amd should
+not be used for ordinary tests.
+
+name: header
+$ set -eu -o pipefail
+$
+$ umask 0027
+$
+$ # Add file and directory lister functions which omit output likely
+$ # to vary between different systems,  particularly uid and gid.
+$
+$ show_file () {
+$     local perms=$(ls -l "$1" | cut -d' ' -f1)
+$     local owner=$(ls -l "$1" | cut -d' ' -f3)
+$     local group=$(ls -l "$1" | cut -d' ' -f4)
+$     echo $perms $owner $group $1
+$ }
+$
+$ show_dir () {
+$     local perms=$(ls -ld "$1" | cut -d' ' -f1)
+$     local owner=$(ls -ld "$1" | cut -d' ' -f3)
+$     local group=$(ls -ld "$1" | cut -d' ' -f4)
+$     echo $perms $owner $group $1
+$ }
+$
+$ # omit every user property irrelevant to tests simplifying creation
+$ add_user () {
+$     local user=$1
+$     # does not handle existing users
+$     adduser --disabled-password --shell /bin/bash --gecos "" $user
+$     usermod -a -G $user $user
+$     chmod 750 /home/$user
+$     chmod g+s /home/$user
+$ }
+$
+$ run_as_user () {
+$     user=$1
+$     shift
+$     if [[ $(whoami) == "root" ]]; then
+$        su --shell /bin/bash - $user -c "$@"
+$     else
+$        echo "ERROR:  run_as_user() must be run as root" >/dev/stderr
+$     fi
+$ }
+$
+$ show_id() {
+$     echo "uid=$(id -n -u) gid=$(id -n -g)"
+$ }
+
+Define trailer script which should be appended to every test
+script and run for every succesful case.  Like header,  it is
+a pseudo-test-case which is used to configure every other
+normal test case.
+
+name: trailer
+$ exit 0    # implied but make explicit
+
+====================================================================
+Do some self tests:
+
+You can match the expected exit code exactly:
+
+name: self-test valid exit_code
+$ exit 1
+exit_code: 1
+
+You can abstract the exit_code to "fail" or "ok".
+
+name: self-test invalid exit_code 2
+$ exit 2
+exit_code: fail
+
+name: self-test valid exit_code
+$ true
+exit_code: 0
+
+Text immediately following the last $ in a block of commands
+is used to define standard output.  The first whitespace-only (blank)
+line terminates expected standard output:
+
+name: self-test valid stdout
+$ echo "hello world"
+hello world
+
+It's possible just to ignore standard output by setting the exit
+code to expect success but not match output:
+
+name: self-test valid exit_code ignore
+$ echo "hello world"
+exit_code: ignore_stdout
+
+stderr follows stdout and must be immediately preceded by !!. In
+the case below,  stdout,  which is not expected at all,  is omitted:
+
+name: self-test valid stderr
+$ echo "goodbye world" 1>&2
+$ exit 1
+!!
+goodbye world

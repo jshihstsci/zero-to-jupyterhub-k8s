@@ -1,0 +1,10 @@
+pyyaml
+requests
+filelock
+text-unidecode
+unidecode
+flask
+gunicorn
+quart
+#quart-schema
+hypercorn

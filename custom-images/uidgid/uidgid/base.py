@@ -1,0 +1,206 @@
+"""
+Base strings for /etc/passwd and /etc/group
+"""
+
+EtcPasswd_Base = "root:x:0:0:root:/root:/bin/bash\n\
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n\
+bin:x:2:2:bin:/bin:/usr/sbin/nologin\n\
+sys:x:3:3:sys:/dev:/usr/sbin/nologin\n\
+sync:x:4:65534:sync:/bin:/bin/sync\n\
+games:x:5:60:games:/usr/games:/usr/sbin/nologin\n\
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin\n\
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin\n\
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin\n\
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin\n\
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin\n\
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin\n\
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\n\
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin\n\
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin\n\
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin\n\
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\n\
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n\
+_apt:x:100:65534::/nonexistent:/usr/sbin/nologin\n\
+jovyan:x:1000:100::/home/jovyan:/bin/bash\n\
+systemd-timesync:x:101:102:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin\n\
+systemd-network:x:102:104:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin\n\
+systemd-resolve:x:103:105:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin\n\
+sshd:x:104:65534::/run/sshd:/usr/sbin/nologin\n\
+messagebus:x:105:107::/nonexistent:/usr/sbin/nologin\n".strip()
+
+Base_UIDs = [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    13,
+    33,
+    34,
+    38,
+    39,
+    41,
+    100,
+    1000,
+    101,
+    102,
+    103,
+    104,
+    105,
+    65534,
+]
+
+Base_GIDs = [
+    0,
+    1,
+    2,
+    3,
+    65534,
+    60,
+    12,
+    7,
+    8,
+    9,
+    10,
+    13,
+    33,
+    34,
+    38,
+    39,
+    41,
+    100,
+    101,
+    102,
+    104,
+    105,
+]
+
+Base_Usernames = [
+    "root",
+    "daemon",
+    "bin",
+    "sys",
+    "sync",
+    "games",
+    "man",
+    "lp",
+    "mail",
+    "news",
+    "uucp",
+    "proxy",
+    "www-data",
+    "backup",
+    "list",
+    "irc",
+    "gnats",
+    "nobody",
+    "_apt",
+    "jovyan",
+    "systemd-timesync",
+    "systemd-network",
+    "systemd-resolve",
+    "sshd",
+    "messagebus",
+]
+
+EtcGroup_Base = "root:x:0:\n\
+daemon:x:1:\n\
+bin:x:2:\n\
+sys:x:3:\n\
+adm:x:4:\n\
+tty:x:5:\n\
+disk:x:6:\n\
+lp:x:7:\n\
+mail:x:8:\n\
+news:x:9:\n\
+uucp:x:10:\n\
+man:x:12:\n\
+proxy:x:13:\n\
+kmem:x:15:\n\
+dialout:x:20:\n\
+fax:x:21:\n\
+voice:x:22:\n\
+cdrom:x:24:\n\
+floppy:x:25:\n\
+tape:x:26:\n\
+sudo:x:27:\n\
+audio:x:29:\n\
+dip:x:30:\n\
+www-data:x:33:\n\
+backup:x:34:\n\
+operator:x:37:\n\
+list:x:38:\n\
+irc:x:39:\n\
+src:x:40:\n\
+gnats:x:41:\n\
+shadow:x:42:\n\
+utmp:x:43:\n\
+video:x:44:\n\
+sasl:x:45:\n\
+plugdev:x:46:\n\
+staff:x:50:\n\
+games:x:60:\n\
+users:x:100:\n\
+nogroup:x:65534:\n\
+ssh:x:101:\n\
+systemd-timesync:x:102:\n\
+systemd-journal:x:103:\n\
+systemd-network:x:104:\n\
+systemd-resolve:x:105:\n\
+crontab:x:106:\n\
+messagebus:x:107:\n".strip()
+
+Base_Groupnames = [
+    "root",
+    "daemon",
+    "bin",
+    "sys",
+    "adm",
+    "tty",
+    "disk",
+    "lp",
+    "mail",
+    "news",
+    "uucp",
+    "man",
+    "proxy",
+    "kmem",
+    "dialout",
+    "fax",
+    "voice",
+    "cdrom",
+    "floppy",
+    "tape",
+    "sudo",
+    "audio",
+    "dip",
+    "www-data",
+    "backup",
+    "operator",
+    "list",
+    "irc",
+    "src",
+    "gnats",
+    "shadow",
+    "utmp",
+    "video",
+    "sasl",
+    "plugdev",
+    "staff",
+    "games",
+    "users",
+    "nogroup",
+    "ssh",
+    "systemd-timesync",
+    "systemd-journal",
+    "systemd-network",
+    "systemd-resolve",
+    "crontab",
+    "messagebus",
+]

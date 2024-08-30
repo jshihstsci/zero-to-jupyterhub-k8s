@@ -1,0 +1,53 @@
+==================================================================================
+
+template: no_access
+var: user, target, group, run_as, directory
+
+TEAM list, read, write, rename, delete, chmod, chown file
+
+run_as: <run_as>
+
+name: <template> list root
+$ show_dir /teams
+drwxr-xr-x. root root /teams
+
+name: <template> <user> list <directory>
+$ show_dir <directory>
+drwxrws--T. <target>-admin <target> <directory>
+
+name: <template> <user> list <target> files in <directory>
+$ ls -1 <directory>
+!!
+ls: cannot open directory '<directory>': Permission denied
+
+name: <template> <user> write <target> files in <directory>
+$ echo "surpise!" ><directory>/<target>.txt
+exit_code: ignore_stderr
+
+name: <template> <user> list <target> files in <directory>
+$ mv <directory> <directory>.2
+!!
+mv: cannot move '<directory>' to '<directory>.2': Permission denied
+
+name: <template> <user> chmod  <target> <directory>
+$ chmod 777 <directory>
+!!
+chmod: changing permissions of '<directory>': Operation not permitted
+
+name: <template> <user> chown <target> <directory>
+$ chown <user>:<group>  <directory>
+!!
+chown: changing ownership of '<directory>': Operation not permitted
+
+end_template: no_access
+
+-----------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+expand: no_access
+let: user      jmiller
+let: target    rmn-437-bucklew
+let: group     rmn-50006-miller
+let: run_as    jmiller:jmiller
+let: directory /teams/rmn-437-bucklew
+

@@ -1,0 +1,67 @@
+==================================================================================
+
+This spec sets up test files in the teams directory created by a different
+user than the tester in one of the tester's groups.   This supports checking
+team member properties.
+
+--------------------------------------------------------------------------------
+
+template: setup-notebook-test
+var: tester, target, group, run_as, directory
+
+TEAM list, read, write, rename, delete, chmod, chown file
+
+run_as: root:root
+
+name: <template> list roots
+
+$ show_dir /efs
+drwxr-xr-x. root root /efs
+
+$ show_dir /efs/teams
+drwxr-xr-x. root root /efs/teams
+
+$ show_dir <directory>
+drwxrws--T. <gid> <gid> <directory>
+
+$ echo "surprise!" ><directory>/<user>.txt
+$ chown <uid> <directory>/<user>.txt
+$ chgrp <gid> <directory>/<user>.txt
+$ chmod 644 <directory>/<user>.txt
+$ show_file <directory>/<user>.txt
+-rw-r--r--. <uid> <gid> <directory>/<user>.txt
+
+$ mkdir -p  <directory>/<user>.dir
+$ chmod 750 <directory>/<user>.dir
+$ chmod +s <directory>/<user>.dir
+$ chown <uid> <directory>/<user>.dir
+$ chgrp <gid> <directory>/<user>.dir
+$ show_dir <directory>/<user>.dir
+drwsr-s---. <uid> <gid> <directory>/<user>.dir
+
+$ echo "hello" > <directory>/<user>.dir/<user>.txt
+$ chmod 644 <directory>/<user>.dir/<user>.txt
+$ chown <uid> <directory>/<user>.dir/<user>.txt
+$ chgrp <gid> <directory>/<user>.dir/<user>.txt
+$ show_file <directory>/<user>.dir/<user>.txt
+-rw-r--r--. <uid> <gid> <directory>/<user>.dir/<user>.txt
+
+Install specs for the tester to use for noteboook session tests.
+
+$ cp -r /efs/test-specs /efs/users/<tester>
+$ rm -f /efs/users/<tester>/test-specs/*.expanded
+$ chown -R <tid>:<tid> /efs/users/<tester>
+
+end_template: setup-notebook-test
+
+------------------------------------------------------------------------------
+
+
+expand: setup-notebook-test
+let: tester    jmiller
+let: tid       1001
+let: user      jovyan
+let: uid       1000
+let: group     rmn-50006-miller
+let: gid       60001
+let: directory /efs/teams/rmn-50006-miller

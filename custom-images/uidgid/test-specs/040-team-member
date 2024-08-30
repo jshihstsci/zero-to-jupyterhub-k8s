@@ -1,0 +1,159 @@
+==============================================================================
+
+template: team_access
+var: user, target, group, run_as, directory
+
+# run_as: <target>:<group>
+# $ echo "surprise!" >  <directory>/<target>.txt
+# $ chmod 640 <directory>/<target>.txt
+
+TEAM list, read, write, rename, delete, chmod, chown file
+
+run_as: <run_as>
+
+name: <template> <user> list <target> files in <directory>
+$ show_file <directory>/<target>.txt
+-rw-r--r--. jovyan <group> <directory>/<target>.txt
+
+name: <template> <user> read <target> file in <directory>
+$ cat <directory>/<target>.txt
+surprise!
+
+If we encourage group readonly by default,  team member <user> cannot
+write to <target>'s file directly.
+
+name: <template> <user> write <target> file in <directory>
+$ echo "goodbye" >  <directory>/<target>.txt
+exit_code: ignore_stderr
+
+Sticky bit should protect member files from being renamed or deleted by members.
+
+name: <template>  <user> rename <target> file in <directory>
+$ mv <directory>/<target>.txt <directory>/<target>-2.txt
+!!
+mv: cannot move '<directory>/<target>.txt' to '<directory>/<target>-2.txt': Operation not permitted
+
+The rm below prompts for confirmation unless -f is specified
+causing the test to timeout.  This is because the rm is attempting to delete
+a write protected file.  Adding -f suppresses the prompt but the delete still
+fails due to the sticky bit.
+
+name: <template>  <user> delete <target> file in <directory> should fail
+$ show_dir <directory>
+$ rm -f  <directory>/<target>.txt
+drwxrws--T. <group>-admin <group> <directory>
+!!
+rm: cannot remove '<directory>/<target>.txt': Operation not permitted
+
+Unlike admin, <user> cannot clear team dir setgid or sticky bit.
+
+name: <template> <user> clear setgid <directory>
+$ chmod g-s <directory>
+!!
+chmod: changing permissions of '<directory>': Operation not permitted
+
+name: <template> <user> clear sticky bit <directory>
+$ chmod -t <directory>
+!!
+chmod: changing permissions of '<directory>': Operation not permitted
+
+Unlike admin,  <user> cannot chmod or chown <target>'s file directly
+
+name: <template> test <user> file chmod  <directory>
+$ chmod 777 <directory>/<target>.txt
+!!
+chmod: changing permissions of '<directory>/<target>.txt': Operation not permitted
+
+name: <template> test <user> file chown  <directory>
+$ chown <user>:<group>  <directory>/<target>.txt
+!!
+chown: changing ownership of '<directory>/<target>.txt': Operation not permitted
+
+Somewhat important to note that <user> cannot chmod or chown the team directory
+<directory> because it is owned by the admin.   Thus,  ordinary member's cannot
+clear a directories
+
+name:  <template> test <user> clear setgid <directory>
+$ show_dir <directory>
+$ chmod g-s <directory>
+drwxrws--T. <group>-admin <group> <directory>
+!!
+chmod: changing permissions of '<directory>': Operation not permitted
+
+name:  <template> test <user> clear sticky <directory>
+$ chmod -t <directory>
+!!
+chmod: changing permissions of '<directory>': Operation not permitted
+
+..................................................................................
+
+TEAM list, read, write, rename, delete, chmod, chown directory
+
+name: <template> <user> create <target> dirs
+
+# run_as: admin1:team1
+# $ rm -rf <directory>/<target>.dir
+
+# run_as: <target>:<group>
+# $ mkdir -p <directory>/<target>.dir
+# $ chmod -R  750  <directory>/<target>.dir
+
+# $ echo "hello" >  <directory>/<target>.dir/<target>.txt
+# $ show_dir <directory>
+# $ show_dir <directory>/<target>.dir
+# $ show_file <directory>/<target>.dir/<target>.txt
+# drwxrws--T. admin1 <group> <directory>
+# drwxr-s---. <target> <group> <directory>/<target>.dir
+# -rw-r-----. <target> <group> <directory>/<target>.dir/<target>.txt
+
+run_as: <run_as>
+
+name: <template> <user> list <directory>/<target>.dir
+$ ls <directory>/<target>.dir
+<target>.txt
+
+name: <template> <user> read <target> dir in <directory>
+$ cat <directory>/<target>.dir/<target>.txt
+hello
+
+name: <template> <user> write <target> dir in <directory>
+$ echo "goodbye" >  <directory>/<target>.txt
+exit_code: ignore_stderr
+
+<user>'s ownership of <directory> enables rename and delete
+even with sticky bit set.
+
+name: <template> <user> rename <target> dir in <directory>
+$ mv <directory>/<target>.dir/<target>.txt <directory>/<target>.dir/<target>-2.txt
+!!
+mv: cannot move '<directory>/<target>.dir/<target>.txt' to '<directory>/<target>.dir/<target>-2.txt': Permission denied
+
+# name: <template> <user> delete <target> file in <directory>
+# $ rm <directory>/<target>.dir/<target>.txt
+
+
+<user> still cannot chmod or chown <target>'s file directly but could copy,
+delete the original, and rename the copy to the original to assume owership.
+
+name: <template> <user> chmod <target> file
+$ chmod 777 <directory>/<target>.dir/<target>.txt
+!!
+chmod: changing permissions of '<directory>/<target>.dir/<target>.txt': Operation not permitted
+
+end_template: team_access
+
+------------------------------------------------------------------------------
+expand: team_access
+let: user      jmiller
+let: target    jovyan
+let: group     rmn-50006-miller
+let: run_as    jmiller:jmiller
+let: directory /teams/rmn-50006-miller
+
+------------------------------------------------------------------------------
+no_expand: team_access
+let: user      member1b
+let: target    member1a
+let: group     team1
+let: run_as    member1b:team1
+let: directory /efs/shared/team1

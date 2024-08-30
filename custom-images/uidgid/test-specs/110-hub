@@ -1,0 +1,79 @@
+===========================================================================================
+
+-------------------------------------------------------------------------------------------
+
+name: standard hub dirs and permissions
+
+The top-level /efs should be owned by root but traversible and readable by all:
+
+$ show_dir /efs
+drwxr-xr-x. root root /efs
+
+All of the top-level subdirs should be owned by root and exposed for reading and execution to 'other'.
+Note that since the group ownership is root those perms are essentially ignored.
+
+$ show_dir /efs/*
+drwxr-xr-x. root root /efs/backups
+
+$ cd /efs
+$ ls
+backups
+data
+services
+teams
+test-specs
+users
+
+-------------------------------------------------------------------------------------------
+name: teams directory and team subdirs
+
+The teams directory itself must be owned by root:root
+The teams directory itself must provide only read and execute
+permissions to 'other' which basically services everyone but root:
+
+$ show_dir /efs/teams
+drwxr-xr-x. root root /efs/teams
+
+Ensure the admin and members are treated as grownups (group w), new files and
+directories are created with the same group by default (setgid s), and team
+members cannot move or delete each others files (sticky bit T):
+
+$ ls -lt /efs/teams | grep -v -E 'drwxrws--T|total'
+exit_code: fail
+
+-------------------------------------------------------------------------------------------
+name: users directory and subdirs
+
+$ show_dir /efs/users
+drwxr-xr-x. root root /efs/users
+
+-------------------------------------------------------------------------------------------
+name: services directory and subdirs
+
+$ show_dir /efs/services
+drwxr-xr-x. root root /efs/services
+
+$ show_dir /efs/services/announcements
+drwxr-xr-x. root root /efs/services/announcements
+
+$ show_dir /efs/services/efs-quota
+drwxr-xr-x. root root /efs/services/efs-quota
+
+$ show_dir /efs/services/uidgid
+drwxr-xr-x. root root /efs/services/uidgid
+
+-------------------------------------------------------------------------------------------
+name: data directory and subdirs
+
+$ show_dir /efs/data
+drwxr-xr-x. root root /efs/data
+
+-------------------------------------------------------------------------------------------
+name: backups directory and subdirs
+
+$ show_dir /efs/backups
+drwxr-xr-x. root root /efs/backups
+
+$ show_dir /efs/backups/uidgid
+drwxr-xr-x. root root /efs/backups/uidgid
+

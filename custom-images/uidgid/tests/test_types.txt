@@ -1,0 +1,64 @@
+>>> from uidgid.types import StrComparable, UserName, GroupName, StsciUuid, StsciEzid
+
+>>> s = StrComparable("This is a test")
+>>> u = StrComparable("This is a test")
+>>> t = StrComparable("This is a counter test")
+
+>>> s == t
+False
+
+>>> s == u
+True
+
+>>> s == s
+True
+
+>>> s == "This is a test"
+True
+
+>>> s == "This is a counter test"
+False
+
+>>> s == None
+False
+
+>>> None == s
+False
+
+
+>>> n1 = UserName("fred")
+>>> n2 = UserName("fred")
+>>> n1 == n2
+True
+
+>>> n1 == "fred"
+True
+>>> n1 == "nancy"
+False
+
+>>> n3 = StsciEzid("fred")
+>>> n1 == n3
+Traceback (most recent call last):
+...
+TypeError: <class 'uidgid.types.UserName'> cannot be compared to <class 'uidgid.types.StsciEzid'>.
+
+>>> n1 < "homer"
+True
+
+>>> n1 < n2
+False
+
+>>> n1 <= n2
+True
+
+>>> n1 != n2
+False
+
+>>> n1 >= n2
+True
+
+>>> n1 > n2
+False
+
+>>> "fred" == n1
+True
