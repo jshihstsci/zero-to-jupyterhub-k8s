@@ -38,6 +38,7 @@ charts:
           - --target=slim-stage
       hub-custom:
         imageName: custom-hub-image
+        contextPath: custom-images/hub
         dockerfilePath: custom-images/hub/Dockerfile
 
       # secret-sync, a sidecar container running in the autohttps pod to next to
