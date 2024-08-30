@@ -23,7 +23,7 @@ FROM ubuntu:22.04 as build-stage
 
 # Get requirements.txt from https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/main/images/hub
 # Make sure to get the right tag/version (currently 2.0.0 on 01/25/24)
-COPY requirements_jh_4_1_3.txt requirements.txt
+COPY requirements.txt requirements.txt
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends \
@@ -86,7 +86,7 @@ RUN echo "alias python=python3" >> ~/.bashrc
 
 # install wheels built in the build stage
 # --no-index ensures _only_ wheels from the build stage are installed
-COPY requirements_jh_4_1_3.txt /tmp/requirements.txt
+COPY requirements.txt /tmp/requirements.txt
 ARG PIP_CACHE_DIR=/tmp/pip-cache
 RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
     --mount=type=cache,from=build-stage,source=/tmp/wheels,target=/tmp/wheels \
@@ -153,7 +153,7 @@ COPY announcements.py  /usr/share/jupyterhub/announcements.py
 RUN chown root:root /usr/share/jupyterhub/announcements.py  && chmod 755 /usr/share/jupyterhub/announcements.py
 
 # Copy and install UID/GID package
-COPY uidgid /usr/src/uidgid
+COPY ../uidgid /usr/src/uidgid
 WORKDIR /usr/src/uidgid
 # For now,  leave the full package install so it works as library or image.
 # Uncomment below once service is stable to avoid advertising how to attack the service with source code
