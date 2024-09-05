@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/python:3.11-slim
+FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-slim
 
 ARG UIDGID_SERVER_URL="localhost:5050"
 ARG SVC_UID=1000
