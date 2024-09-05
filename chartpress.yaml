@@ -42,6 +42,7 @@ charts:
         dockerfilePath: custom-images/hub/Dockerfile
         extraBuildCommandOptions:
           - --no-cache
+          - --progress=plain
 
       # secret-sync, a sidecar container running in the autohttps pod to next to
       # Traefik meant to sync a TLS certificate with a k8s Secret.
