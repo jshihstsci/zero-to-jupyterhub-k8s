@@ -13,7 +13,7 @@
 
 # Original hub images in jupyterhub/k8s-hub are built with Debian python:3.11-bookworm as base
 # Switched to Ubuntu here to reduce vulnerabilities and avoid being quarantine by ECR
-FROM ubuntu:22.04 as build-stage
+FROM public.ecr.aws/docker/library/ubuntu:22.04 as build-stage
 
 # Build wheels
 

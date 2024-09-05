@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 ARG UIDGID_SERVER_URL="localhost:5050"
 ARG SVC_UID=1000
