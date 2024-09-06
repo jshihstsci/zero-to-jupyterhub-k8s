@@ -20,6 +20,3 @@ pre-commit>=2.0.0
 
 # used for tagging releases
 tbump
-
-# sqlite3 (not in original)
-pysqlite3
