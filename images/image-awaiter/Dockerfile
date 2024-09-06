@@ -1,5 +1,5 @@
 # compile the code to an executable using an intermediary image
-FROM golang:1.18
+FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:golang1.18
 
 # VULN_SCAN_TIME=
 
