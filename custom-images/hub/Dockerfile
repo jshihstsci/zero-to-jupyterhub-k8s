@@ -13,7 +13,7 @@
 
 # Original hub images in jupyterhub/k8s-hub are built with Debian python:3.11-bookworm as base
 # Switched to Ubuntu here to reduce vulnerabilities and avoid being quarantine by ECR
-FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as build-stage
+FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as build-stage
 RUN echo "$PWD"
 # Build wheels
 
@@ -54,7 +54,7 @@ RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
 # This stage is originally built and published as quay.io/jupyterhub/k8s-hub-slim. It is meant to
 # provide no non-essential packages.
 #
-FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as slim-stage
+FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as slim-stage
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG NB_USER=jovyan \

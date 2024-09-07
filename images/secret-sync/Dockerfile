@@ -1,4 +1,4 @@
-FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-alpine
+FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-alpine
 
 # VULN_SCAN_TIME=2024-01-29_05:13:21
 

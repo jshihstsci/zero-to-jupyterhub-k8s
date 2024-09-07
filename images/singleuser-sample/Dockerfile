@@ -10,7 +10,7 @@
 # NOTE: If the image version is updated, also update it in ci/refreeze and
 #       hub's Dockerfile!
 #
-FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-bullseye as build-stage
+FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-bullseye as build-stage
 
 # Build wheels
 #
@@ -30,7 +30,7 @@ RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
 # The final stage
 # ---------------
 #
-FROM 378083651696.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-slim-bullseye
+FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:python3.11-slim-bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV NB_USER=jovyan \
