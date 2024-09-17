@@ -13,8 +13,11 @@
 
 # Original hub images in jupyterhub/k8s-hub are built with Debian python:3.11-bookworm as base
 # Switched to Ubuntu here to reduce vulnerabilities and avoid being quarantine by ECR
-FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as build-stage
-RUN echo "$PWD"
+ARG BASE_IMAGE_REPO
+ARG BASE_IMAGE_NAME
+#FROM ubuntu:22.04 as build-stage
+FROM ${BASE_IMAGE_REPO}:${BASE_IMAGE_NAME} as build-stage
+
 # Build wheels
 
 # We set pip's cache directory and expose it across build stages via an
@@ -23,7 +26,7 @@ RUN echo "$PWD"
 
 # Get requirements.txt from https://github.com/jupyterhub/zero-to-jupyterhub-k8s/tree/main/images/hub
 # Make sure to get the right tag/version (currently 2.0.0 on 01/25/24)
-COPY requirements.txt requirements.txt
+COPY requirements_jh_4_1_3.txt requirements.txt
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends \
@@ -54,7 +57,8 @@ RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
 # This stage is originally built and published as quay.io/jupyterhub/k8s-hub-slim. It is meant to
 # provide no non-essential packages.
 #
-FROM 114882298157.dkr.ecr.us-east-1.amazonaws.com/roman:ubuntu22.04 as slim-stage
+#FROM ubuntu:22.04 as slim-stage
+FROM ${BASE_IMAGE_REPO}:${BASE_IMAGE_NAME} as slim-stage
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG NB_USER=jovyan \
@@ -86,7 +90,7 @@ RUN echo "alias python=python3" >> ~/.bashrc
 
 # install wheels built in the build stage
 # --no-index ensures _only_ wheels from the build stage are installed
-COPY requirements.txt /tmp/requirements.txt
+COPY requirements_jh_4_1_3.txt /tmp/requirements.txt
 ARG PIP_CACHE_DIR=/tmp/pip-cache
 RUN --mount=type=cache,target=${PIP_CACHE_DIR} \
     --mount=type=cache,from=build-stage,source=/tmp/wheels,target=/tmp/wheels \
@@ -153,7 +157,7 @@ COPY announcements.py  /usr/share/jupyterhub/announcements.py
 RUN chown root:root /usr/share/jupyterhub/announcements.py  && chmod 755 /usr/share/jupyterhub/announcements.py
 
 # Copy and install UID/GID package
-COPY ../uidgid /usr/src/uidgid
+COPY uidgid /usr/src/uidgid
 WORKDIR /usr/src/uidgid
 # For now,  leave the full package install so it works as library or image.
 # Uncomment below once service is stable to avoid advertising how to attack the service with source code

@@ -40,6 +40,9 @@ charts:
         imageName: custom-hub-image
         contextPath: custom-images/hub
         dockerfilePath: custom-images/hub/Dockerfile
+        buildArgs:
+          BASE_IMAGE_REPO: "114882298157.dkr.ecr.us-east-1.amazonaws.com/roman"
+          BASE_IMAGE_NAME: "ubuntu22.04"
         extraBuildCommandOptions:
           - --no-cache
           - --progress=plain
