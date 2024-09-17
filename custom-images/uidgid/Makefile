@@ -1,4 +1,4 @@
-'.PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8 lint/black build-service push-service build-and-push
+PHONY: clean clean-build clean-pyc clean-test coverage dist docs help install lint lint/flake8 lint/black build push build-and-push
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -22,17 +22,19 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 define TEST_OUTPUTS
-all_groups.yaml all_users.yaml etc_passwd.yaml tmp_test_all_groups.yaml tmp_test_all_users.yaml stsci_users.yaml uidgid.lock efs live-test.log
+all_groups.yaml all_users.yaml etc_passwd.yaml tmp_test_all_groups.yaml tmp_test_all_users.yaml stsci_users.yaml uidgid.lock efs live-test.log etc_passwd etc_group
 endef
 export TEST_OUTPUTS
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 TAG := "uidgid-service-${ENVIRONMENT}"
+BASE_IMAGE_REPO := "${ECR_REGISTRY}/${IMAGE_REPO}"
+BASE_IMAGE_NAME := "python3.11-slim"
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-pyc clean-test clean-other ## remove all build, test, coverage and Python artifacts
 
 clean-build: ## remove build artifacts
 	rm -fr build/
@@ -49,19 +51,23 @@ clean-pyc: ## remove Python file artifacts
 
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
 	rm -fr .pytest_cache
 	rm -fr $$TEST_OUTPUTS
 
+clean-other:
+	rm -rf prof
+	rm -f .coverage
+	rm -fr htmlcov/
+
 lint/flake8: ## check style with flake8
-	find uidgid tests -name '*.py' | xargs flake8  --max-line-length 120  --ignore E302,E203,E305,W291,W503,W504,W391,E501 --count  --statistics
+	find uidgid tests service_tests -name '*.py' | xargs flake8  --max-line-length 120 \
+	  --ignore E302,E203,E305,W291,W503,W504,W391,E501 --count  --statistics
 
 lint/black: ## check style with black
-	black --check uidgid tests
+	black --check uidgid tests service_tests
 
 lint/bandit: ## check security with bandit
-	find uidgid tests -name '*.py' | xargs bandit -v -ll -ii --format txt
+	find uidgid tests service_tests -name '*.py' | xargs bandit -v -ll -ii --format txt
 
 lint/mypy:
 	mypy --install-types  uidgid
@@ -69,25 +75,32 @@ lint/mypy:
 lint: lint/flake8  lint/mypy  lint/black  lint/bandit ## check style, type annotations, whitespace
 
 
-build-and-push:  build-service  push-service
+build-and-push:  build  push
 
-build-service:
-	docker build . --platform ${PLATFORM} --progress plain -t ${TAG} -t ${ECR_REGISTRY}/${IMAGE_REPO}:${TAG}
+build:
+	docker build . --platform ${PLATFORM} --progress plain --build-arg BASE_IMAGE_NAME=${BASE_IMAGE_NAME} --build-arg BASE_IMAGE_REPO=${BASE_IMAGE_REPO} -t ${TAG} -t ${ECR_REGISTRY}/${IMAGE_REPO}:${TAG}
 
-push-service: ## Push image and write image digest to local file (for CI purposes)
+push:
 	image-login
 	docker push ${ECR_REGISTRY}/${IMAGE_REPO}:${TAG}
 	docker images --digests | grep ${ECR_REGISTRY}/${IMAGE_REPO} | grep ${TAG} | awk '{ print $$3 }' > image_digest_uidgid.txt
 
-test:  clean-test   ## run tests quickly with the default Python
-	./live-test pytest
+test-all: lint local-test service-test
+
+test: local-test
+
+local-test:  clean-test   ## run tests quickly with the default Python
+	./local-test pytest
 
 coverage: clean-test ## check code coverage quickly with the default Python
-	./live-test coverage
+	./local-test coverage
 	$(BROWSER) htmlcov/index.html
 
+service-test: clean-test
+	./service-test
+
 load-test: clean-test
-	./live-test load-test
+	./service-test load-test
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist
